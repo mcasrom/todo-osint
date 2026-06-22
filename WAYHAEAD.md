@@ -1,60 +1,65 @@
 # Todo-OSINT — WAYHAEAD & Roadmap
 
 > **Email:** threatradar-osint@viajeinteligencia.com  
-> **Repo:** https://github.com/mcasrom/todo-osint
+> **Repo:** https://github.com/mcasrom/todo-osint  
+> **Estado:** v1.0 MVP funcionando  
+> **Fecha:** Junio 2026
 
 ---
 
-## 📋 APIs Necesarias
+## ✅ Sprint 0 — Completado
 
-| API | Uso | Precio | Prioridad |
-|-----|-----|--------|-----------|
-| **Google Gemini** | Conexiones IA, MindMaps, resúmenes | Free (60 req/min) | 🔴 |
-| **Stripe** | Pagos suscripción Pro | 2.9% + €0.25 | 🟡 |
-
-Solo necesitas **Gemini** para que la app brille. El resto es infraestructura.
-
----
-
-## 🗺️ Roadmap
-
-### Sprint 1 — MVP Funcional (Semana 1-2)
-- [x] Captura rápida de ideas/tareas/notas
+- [x] Captura rápida (ideas, tareas, notas, insights)
 - [x] SQLite persistence
 - [x] Búsqueda y filtros
-- [x] Pomodoro timer
+- [x] Pomodoro timer con stats
 - [x] CRUD completo
-- [ ] Auth básica (JWT)
-- [ ] PWA manifest + service worker
-
-### Sprint 2 — IA Knowledge (Semana 3-4)
 - [x] AI connect endpoint (relaciones automáticas)
 - [x] AI mindmap generation
 - [x] AI summarize
-- [ ] Visual mindmap interactivo (canvas/SVG)
-- [ ] Auto-tagging con IA
-- [ ] Sugerencias de proyecto
+- [x] Deploy ready (Vercel, Docker, Hetzner)
+- [x] Docs: README, HOWTO, WAYHAEAD
 
-### Sprint 3 — Monetización (Semana 5-6)
+---
+
+## 📋 Sprint 1 — Auth + PWA (Semana 1-2)
+
+- [ ] JWT auth (registro/login)
+- [ ] User isolation (cada user ve sus entradas)
+- [ ] PWA manifest + service worker (offline)
+- [ ] Visual mindmap interactivo (canvas/SVG drag)
+- [ ] Auto-tagging con IA
+- [ ] Export JSON/Markdown
+
+---
+
+## 📋 Sprint 2 — Monetización (Semana 3-4)
+
 - [ ] Stripe integration
 - [ ] Feature gating (free vs pro)
-- [ ] Export PDF/Markdown
 - [ ] Landing page pricing
 - [ ] Trial 14 días
+- [ ] Export PDF con branding
 
-### Sprint 4 — Pro Features (Semana 7-8)
+---
+
+## 📋 Sprint 3 — Pro Features (Semana 5-6)
+
 - [ ] Sync multi-device
-- [ ] Mobile app (React Native o PWA avanzada)
-- [ ] Voice capture (speech-to-text)
+- [ ] Voice capture (speech-to-text browser)
 - [ ] Calendar integration
 - [ ] Team workspace
-
-### Sprint 5 — Growth (Semana 9+)
 - [ ] API pública
-- [ ] Integrations (Notion, Obsidian, Roam)
+
+---
+
+## 📋 Sprint 4 — Growth (Semana 7+)
+
+- [ ] Integrations (Notion, Obsidian, Google Keep)
 - [ ] Templates de proyectos
-- [ ] Community features
 - [ ] Analytics dashboard
+- [ ] Community features
+- [ ] Mobile app (React Native)
 
 ---
 
@@ -68,15 +73,14 @@ Solo necesitas **Gemini** para que la app brille. El resto es infraestructura.
 
 ---
 
-## 🚀 Deploy Checklist
+## 🔧 Tech Debt
 
-- [ ] `npm install`
-- [ ] `.env` con GEMINI_API_KEY
-- [ ] `npm run dev` → test local
-- [ ] Push a GitHub
-- [ ] Deploy Vercel o Hetzner
-- [ ] Configurar dominio + SSL
-- [ ] Test completo
+- [ ] Tests (Jest + React Testing Library)
+- [ ] CI/CD GitHub Actions
+- [ ] Error boundaries React
+- [ ] Input validation Zod
+- [ ] Rate limiting per user
+- [ ] DB migrations
 
 ---
 

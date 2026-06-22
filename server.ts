@@ -16,8 +16,26 @@ if (GEMINI_API_KEY) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Security
-app.use(helmet());
+// Security - relaxed for dev, strict for prod
+const isProduction = process.env.NODE_ENV === 'production';
+
+if (isProduction) {
+  app.use(helmet());
+} else {
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "ws:", "wss:", "https:"],
+        workerSrc: ["'self'", "blob:"],
+      },
+    },
+  }));
+}
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
@@ -143,7 +161,7 @@ app.post('/api/ai/connect', async (req, res) => {
   const entry = db.prepare('SELECT * FROM entries WHERE id = ?').get(entryId);
   if (!entry) return res.status(404).json({ error: 'Entry not found' });
 
-  const allEntries = db.prepare('SELECT id, type, title, content, tags, project FROM entries WHERE id != ? AND status = "active"').all(entryId);
+  const allEntries = db.prepare("SELECT id, type, title, content, tags, project FROM entries WHERE id != ? AND status = 'active'").all(entryId);
 
   try {
     const prompt = `You are a knowledge graph assistant. Analyze this new entry and find connections with existing entries.
@@ -200,9 +218,9 @@ app.post('/api/ai/mindmap', async (req, res) => {
   const { project } = req.body;
   let entries: any[];
   if (project) {
-    entries = db.prepare('SELECT id, type, title, content, tags FROM entries WHERE project = ? AND status = "active"').all(project);
+    entries = db.prepare("SELECT id, type, title, content, tags FROM entries WHERE project = ? AND status = 'active'").all(project);
   } else {
-    entries = db.prepare('SELECT id, type, title, content, tags FROM entries WHERE status = "active" LIMIT 50').all();
+    entries = db.prepare("SELECT id, type, title, content, tags FROM entries WHERE status = 'active' LIMIT 50").all();
   }
 
   if (entries.length === 0) return res.json({ nodes: [], edges: [] });
@@ -244,9 +262,9 @@ app.post('/api/ai/summarize', async (req, res) => {
   const { project } = req.body;
   let entries: any[];
   if (project) {
-    entries = db.prepare('SELECT type, title, content FROM entries WHERE project = ? AND status = "active" ORDER BY created_at DESC LIMIT 30').all(project);
+    entries = db.prepare("SELECT type, title, content FROM entries WHERE project = ? AND status = 'active' ORDER BY created_at DESC LIMIT 30").all(project);
   } else {
-    entries = db.prepare('SELECT type, title, content FROM entries WHERE status = "active" ORDER BY created_at DESC LIMIT 30').all();
+    entries = db.prepare("SELECT type, title, content FROM entries WHERE status = 'active' ORDER BY created_at DESC LIMIT 30").all();
   }
 
   if (entries.length === 0) return res.json({ summary: 'No entries to summarize.' });
