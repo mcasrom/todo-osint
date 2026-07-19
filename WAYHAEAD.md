@@ -88,6 +88,14 @@
 
 ---
 
+## 📋 Sprint 3.5 — Voice Capture Server-side (PENDIENTE)
+
+- [ ] **Voice capture robusto**: la Web Speech API (`SpeechRecognition`) NO está disponible en Linux/Chromium/Firefox (depende del SO). El botón "Capturar por voz" (tab Capturar) solo aparece donde la API exista (Edge/Chrome en Windows/macOS).
+- [ ] **Plan**: implementar voice capture por servidor con `MediaRecorder` en el navegador → enviar audio a Gemini (transcripción de audio) → poblar título/contenido. Funciona en cualquier navegador con micrófono, sin depender de Web Speech API.
+- [ ] Decisionado dejar para sprint posterior (usuario en Linux sin micrófono/Web Speech API). No bloquea el deploy actual.
+
+---
+
 ## 📋 Sprint 4 — UX Polish + Export (Semana 1-2)
 
 - [x] Workspace: Outline + Kanban + Linked Notes + Graph (replaces MindMap)
