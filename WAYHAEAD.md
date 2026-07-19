@@ -66,6 +66,28 @@
 
 ---
 
+## ✅ Deploy — Producción (Julio 2026)
+
+- [x] **URL:** https://mindflow.viajeinteligencia.com (SSL Let's Encrypt, auto-renueva)
+- [x] **Server:** Hetzner `178.105.80.193`, usuario `deploy`, repo en `/home/deploy/todo-osint`
+- [x] **Contenedor:** Docker en puerto host **3020** → container 3000 (libre; no pisa apps en 3000–3017)
+- [x] **nginx:** nuevo server_block `mindflow` (HTTP→HTTPS redirect), sin tocar los 17 sitios existentes
+- [x] **`.env`** con tokens Gemini/Groq copiado manual al server (nunca de git, gitignored)
+- [x] **DNS:** Cloudflare A record `mindflow` → IP (proxy gris/DNS-only para certbot)
+- [x] **Monitoreo:** `~/monitor-todo-osint.sh` + cron cada hora → `~/logs/todo-osint-monitor.log`
+
+### Bugs encontrados y corregidos en producción
+- [x] `SqliteError: no such column: "now"` en `/api/stats` y `/api/pomodoro/stats` (500). Causa: `datetime("now")` con comillas dobles. → comillas simples.
+- [x] `trust proxy`: fijado a `'loopback'` (seguro detrás de nginx, rate-limit correcto).
+- [x] Healthcheck Docker: `wget` de BusyBox fallaba → reemplazado por `node -e fetch` en override.
+
+### Notas de operación
+- Deploy = `git pull` en server + `docker compose build --no-cache && docker compose up -d` (puerto 3020 reaplicado en compose local).
+- No commitear `.env` (gitignored). Secrets solo manual en server.
+- Stripe / monetización: **pendiente**, tras validación con usuarios reales.
+
+---
+
 ## 📋 Sprint 4 — UX Polish + Export (Semana 1-2)
 
 - [x] Workspace: Outline + Kanban + Linked Notes + Graph (replaces MindMap)
