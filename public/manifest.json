@@ -1,0 +1,17 @@
+{
+  "name": "Todo-OSINT",
+  "short_name": "Todo-OSINT",
+  "description": "Captura ideas al vuelo. Conecta conocimiento con IA.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
