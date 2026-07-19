@@ -32,7 +32,19 @@ app.set('trust proxy', 'loopback');
 const isProduction = process.env.NODE_ENV === 'production';
 
 if (isProduction) {
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "ws:", "wss:", "https:"],
+        workerSrc: ["'self'", "blob:"],
+      },
+    },
+  }));
 } else {
   app.use(helmet({
     contentSecurityPolicy: {
