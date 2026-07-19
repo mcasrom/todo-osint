@@ -27,7 +27,7 @@ if (DEV_USER_EMAIL && DEV_USER_PASSWORD) {
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
-app.set('trust proxy', true);
+app.set('trust proxy', 'loopback');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
