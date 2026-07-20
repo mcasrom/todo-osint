@@ -357,6 +357,7 @@ export default function App() {
           </div>
         </div>
       )}
+      {selectedEntry && <EntryCommentsPanel entry={selectedEntry} lang={lang} theme={theme} authEmail={user?.email || ''} onClose={() => onSelectEntry(null)} />}
     </div>
   );
 }
@@ -600,8 +601,7 @@ function EntriesTab({ entries, searchQuery, setSearchQuery, filterType, setFilte
             ))}
           </>
       )}
-      {selectedEntry && <EntryCommentsPanel entry={selectedEntry} lang={lang} theme={theme} authEmail={user?.email || ''} onClose={() => onSelectEntry(null)} />}
-    </div>
+      </div>
     </div>
   );
 }
