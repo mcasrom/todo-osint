@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, Brain, Map as MapIcon, Timer, BookOpen, Info, CheckCircle, Trash2, Tag, Folder, Zap, CalendarIcon, LogIn, UserPlus, LogOut, User, Download, Smartphone, Globe, Crown, Lock, Sun, Moon, Sparkles, GripVertical, CheckSquare, Square, FileJson, FileText, LayoutGrid, Columns, Link2, ChevronRight, ChevronDown, MoveRight, Mic } from 'lucide-react';
+import { Plus, Search, Brain, Map as MapIcon, Timer, BookOpen, Info, CheckCircle, MessageCircle, Trash2, Tag, Folder, Zap, CalendarIcon, LogIn, UserPlus, LogOut, User, Download, Smartphone, Globe, Crown, Lock, Sun, Moon, Sparkles, GripVertical, CheckSquare, Square, FileJson, FileText, LayoutGrid, Columns, Link2, ChevronRight, ChevronDown, MoveRight, Mic } from 'lucide-react';
 import { Entry, EntryComment } from './types';
 import { t, Lang } from './i18n';
 
@@ -334,7 +334,7 @@ export default function App() {
 
       <main className="max-w-6xl mx-auto px-4 py-6">
         {activeTab === 'capture' && <CaptureTab onAdd={handleAddEntry} theme={theme} lang={lang} />}
-        {activeTab === 'entries' && <EntriesTab entries={entries} searchQuery={searchQuery} setSearchQuery={setSearchQuery} filterType={filterType} setFilterType={setFilterType} filterStatus={filterStatus} setFilterStatus={setFilterStatus} onDelete={handleDeleteEntry} onToggle={handleToggleStatus} onFilter={fetchEntries} onBulk={handleBulkAction} onExport={handleExport} theme={theme} />}
+        {activeTab === 'entries' && <EntriesTab entries={entries} searchQuery={searchQuery} setSearchQuery={setSearchQuery} filterType={filterType} setFilterType={setFilterType} filterStatus={filterStatus} setFilterStatus={setFilterStatus} onDelete={handleDeleteEntry} onToggle={handleToggleStatus} onFilter={fetchEntries} onBulk={handleBulkAction} onExport={handleExport} onComment={setSelectedEntry} theme={theme} />}
         {activeTab === 'calendar' && <CalendarTab entries={calendarEntries} year={calendarYear} month={calendarMonth} onYearChange={setCalendarYear} onMonthChange={setCalendarMonth} theme={theme} />}
         {activeTab === 'workspace' && <WorkspaceTab entries={entries} onStatusChange={(id, status) => { API(`/api/entries/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }).then(() => fetchEntries()); }} theme={theme} />}
         {activeTab === 'pomodoro' && <PomodoroTab stats={pomodoroStats} timeLeft={pomodoroTimeLeft} setTimeLeft={setPomodoroTimeLeft} isRunning={pomodoroIsRunning} setIsRunning={setPomodoroIsRunning} duration={pomodoroDuration} setDuration={setPomodoroDuration} lang={lang} theme={theme} />}
@@ -482,7 +482,7 @@ function CaptureTab({ onAdd, theme, lang }: { onAdd: (e: Partial<Entry>) => void
   );
 }
 
-function EntriesTab({ entries, searchQuery, setSearchQuery, filterType, setFilterType, filterStatus, setFilterStatus, onDelete, onToggle, onFilter, onBulk, onExport, theme }: any) {
+function EntriesTab({ entries, searchQuery, setSearchQuery, filterType, setFilterType, filterStatus, setFilterStatus, onDelete, onToggle, onFilter, onBulk, onExport, onComment, theme }: any) {
   const [selected, setSelected] = useState<Set<number>>(new Set());
 
   const typeColors: Record<string, string> = { idea: 'text-amber-400', task: 'text-emerald-400', note: 'text-blue-400', insight: 'text-purple-400' };
@@ -586,6 +586,7 @@ function EntriesTab({ entries, searchQuery, setSearchQuery, filterType, setFilte
                     {entry.tags.length > 0 && <div className="flex gap-1 mt-2 flex-wrap">{entry.tags.map((tag, i) => <span key={i} className={`text-[10px] ${inputBg} ${subtleText} px-1.5 py-0.5 rounded`}>#{tag}</span>)}</div>}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={() => onComment(entry)} className={`p-1.5 ${mutedText} hover:text-amber-400 transition`} title="Anotar"><MessageCircle size={16} /></button>
                     <button onClick={() => onToggle(entry)} className={`p-1.5 ${mutedText} hover:text-emerald-400 transition`}><CheckCircle size={16} /></button>
                     <button onClick={() => onDelete(entry.id)} className={`p-1.5 ${mutedText} hover:text-red-400 transition`}><Trash2 size={16} /></button>
                   </div>
