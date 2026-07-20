@@ -287,6 +287,30 @@ app.delete('/api/entries/:id', authMiddleware, (req, res) => {
   res.json({ success: true });
 });
 
+// --- Entry Comments ---
+app.get('/api/entries/:id/comments', authMiddleware, (req, res) => {
+  const entry = db.prepare('SELECT id FROM entries WHERE id = ? AND user_id = ?').get(req.params.id, (req as any).userId);
+  if (!entry) return res.status(404).json({ error: 'Entry not found' });
+  const comments = db.prepare('SELECT * FROM entry_comments WHERE entry_id = ? ORDER BY created_at ASC').all(req.params.id);
+  res.json(comments);
+});
+
+app.post('/api/entries/:id/comments', authMiddleware, (req, res) => {
+  const { content } = req.body;
+  if (!content || !content.trim()) return res.status(400).json({ error: 'content required' });
+  const entry = db.prepare('SELECT id FROM entries WHERE id = ? AND user_id = ?').get(req.params.id, (req as any).userId);
+  if (!entry) return res.status(404).json({ error: 'Entry not found' });
+  const result = db.prepare('INSERT INTO entry_comments (entry_id, user_id, content) VALUES (?, ?, ?)').run(req.params.id, (req as any).userId, content.trim());
+  const comment = db.prepare('SELECT * FROM entry_comments WHERE id = ?').get(result.lastInsertRowid);
+  res.status(201).json(comment);
+});
+
+app.delete('/api/comments/:id', authMiddleware, (req, res) => {
+  const result = db.prepare('DELETE FROM entry_comments WHERE id = ? AND user_id = ?').run(req.params.id, (req as any).userId);
+  if (result.changes === 0) return res.status(404).json({ error: 'Comment not found' });
+  res.json({ success: true });
+});
+
 // --- Projects ---
 app.get('/api/projects', authMiddleware, (req, res) => {
   const projects = db.prepare('SELECT DISTINCT project, COUNT(*) as count FROM entries WHERE user_id = ? AND project != "" GROUP BY project ORDER BY count DESC').all((req as any).userId);

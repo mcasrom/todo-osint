@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, Brain, Map as MapIcon, Timer, BookOpen, Info, CheckCircle, Trash2, Tag, Folder, Zap, CalendarIcon, LogIn, UserPlus, LogOut, User, Download, Smartphone, Globe, Crown, Lock, Sun, Moon, Sparkles, GripVertical, CheckSquare, Square, FileJson, FileText, LayoutGrid, Columns, Link2, ChevronRight, ChevronDown, MoveRight, Mic } from 'lucide-react';
-import { Entry } from './types';
+import { Entry, EntryComment } from './types';
 import { t, Lang } from './i18n';
 
 type TabType = 'capture' | 'entries' | 'workspace' | 'pomodoro' | 'knowledge' | 'calendar' | 'about';
@@ -984,23 +984,98 @@ function WorkspaceTab({ entries, onStatusChange, theme }: { entries: Entry[]; on
         </div>
       )}
 
-      {selectedEntry && (
-        <div className={`${cardBg} border ${cardBorder} rounded-lg p-4`}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">{typeIcons[selectedEntry.type]}</span>
-              <span className={`text-sm font-semibold ${subtleText}`}>{selectedEntry.title}</span>
-            </div>
-            <button onClick={() => setSelectedEntry(null)} className={`text-xs ${mutedText} hover:text-zinc-300 transition`}>✕</button>
-          </div>
-          {selectedEntry.content && <p className={`text-xs ${mutedText} mb-2`}>{selectedEntry.content}</p>}
-          {selectedEntry.tags.length > 0 && (
-            <div className="flex gap-1 flex-wrap">
-              {selectedEntry.tags.map((tag, i) => <span key={i} className={`text-[10px] ${inputBg} ${subtleText} px-1.5 py-0.5 rounded`}>#{tag}</span>)}
-            </div>
-          )}
+      {selectedEntry && <EntryCommentsPanel entry={selectedEntry} lang={lang} theme={theme} authEmail={user?.email || ''} onClose={() => setSelectedEntry(null)} />}
+    </div>
+  );
+}
+
+function EntryCommentsPanel({ entry, lang, theme, authEmail, onClose }: { entry: Entry; lang: Lang; theme: string; authEmail: string; onClose: () => void }) {
+  const tr = t[lang];
+  const [comments, setComments] = useState<EntryComment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [sending, setSending] = useState(false);
+  const cardBg = theme === 'dark' ? 'bg-zinc-900' : 'bg-white';
+  const cardBorder = theme === 'dark' ? 'border-zinc-800' : 'border-gray-200';
+  const inputBg = theme === 'dark' ? 'bg-zinc-800' : 'bg-gray-200';
+  const subtleText = theme === 'dark' ? 'text-zinc-300' : 'text-gray-700';
+  const mutedText = theme === 'dark' ? 'text-zinc-500' : 'text-gray-500';
+
+  const loadComments = () => {
+    fetch(`/api/entries/${entry.id}/comments`).then(r => r.json()).then(setComments).catch(() => {});
+  };
+
+  useEffect(loadComments, [entry.id]);
+
+  const handleSubmit = async () => {
+    if (!newComment.trim() || sending) return;
+    setSending(true);
+    try {
+      const res = await fetch(`/api/entries/${entry.id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify({ content: newComment.trim() })
+      });
+      if (res.ok) { setNewComment(''); loadComments(); }
+    } finally { setSending(false); }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      const res = await fetch(`/api/comments/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+      if (res.ok) loadComments();
+    } catch {}
+  };
+
+  const typeIcons: Record<string, string> = { idea: '💡', task: '✅', note: '📝', insight: '🧠' };
+
+  return (
+    <div className={`${cardBg} border ${cardBorder} rounded-lg p-4`}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{typeIcons[entry.type] || '📌'}</span>
+          <span className={`text-sm font-semibold ${subtleText}`}>{entry.title}</span>
+        </div>
+        <button onClick={onClose} className={`text-xs ${mutedText} hover:text-zinc-300 transition`}>✕</button>
+      </div>
+      {entry.content && <p className={`text-xs ${mutedText} mb-3`}>{entry.content}</p>}
+      {entry.tags.length > 0 && (
+        <div className="flex gap-1 flex-wrap mb-3">
+          {entry.tags.map((tag, i) => <span key={i} className={`text-[10px] ${inputBg} ${subtleText} px-1.5 py-0.5 rounded`}>#{tag}</span>)}
         </div>
       )}
+
+      <div className={`border-t ${cardBorder} pt-3 mt-2`}>
+        <h4 className={`text-xs font-semibold ${subtleText} mb-2 uppercase tracking-wider`}>{tr.comments.title}</h4>
+
+        {comments.length === 0 && <p className={`text-[11px] ${mutedText} italic mb-2`}>{tr.comments.empty}</p>}
+
+        <div className="space-y-2 mb-3 max-h-48 overflow-y-auto">
+          {comments.map(c => (
+            <div key={c.id} className={`text-[11px] ${inputBg} rounded p-2`}>
+              <div className={subtleText}>{c.content}</div>
+              <div className="flex justify-between items-center mt-1">
+                <span className={`text-[9px] ${mutedText}`}>{new Date(c.created_at).toLocaleString(lang === 'es' ? 'es-ES' : 'en-US')}</span>
+                <button onClick={() => handleDelete(c.id)} className={`text-[9px] text-red-400 hover:text-red-300 transition`}>{tr.auth.delete || '✕'}</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newComment}
+            onChange={e => setNewComment(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
+            placeholder={tr.comments.placeholder}
+            className={`flex-1 text-xs ${inputBg} ${subtleText} px-2 py-1.5 rounded border-0 outline-none`}
+          />
+          <button onClick={handleSubmit} disabled={sending || !newComment.trim()}
+            className={`text-xs px-3 py-1.5 rounded font-medium transition ${sending || !newComment.trim() ? `${inputBg} ${mutedText}` : 'bg-amber-500 hover:bg-amber-400 text-zinc-950'}`}>
+            {tr.comments.submit}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

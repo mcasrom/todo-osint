@@ -32,6 +32,15 @@ export interface PomodoroSession {
   finished_at: string | null;
 }
 
+export interface EntryComment {
+  id: number;
+  entry_id: number;
+  user_id: number;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface KnowledgeInsight {
   connections: string[];
   summary: string;
