@@ -1002,7 +1002,7 @@ function EntryCommentsPanel({ entry, lang, theme, authEmail, onClose }: { entry:
   const mutedText = theme === 'dark' ? 'text-zinc-500' : 'text-gray-500';
 
   const loadComments = () => {
-    fetch(`/api/entries/${entry.id}/comments`).then(r => r.json()).then(setComments).catch(() => {});
+    fetch(`/api/entries/${entry.id}/comments`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }).then(r => { if (r.ok) return r.json(); return []; }).then(setComments).catch(() => setComments([]));
   };
 
   useEffect(loadComments, [entry.id]);
