@@ -40,6 +40,7 @@ export default function App() {
 
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
   const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth() + 1);
+  const [selectedEntry, onSelectEntry] = useState<Entry | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -334,9 +335,9 @@ export default function App() {
 
       <main className="max-w-6xl mx-auto px-4 py-6">
         {activeTab === 'capture' && <CaptureTab onAdd={handleAddEntry} theme={theme} lang={lang} />}
-        {activeTab === 'entries' && <EntriesTab entries={entries} searchQuery={searchQuery} setSearchQuery={setSearchQuery} filterType={filterType} setFilterType={setFilterType} filterStatus={filterStatus} setFilterStatus={setFilterStatus} onDelete={handleDeleteEntry} onToggle={handleToggleStatus} onFilter={fetchEntries} onBulk={handleBulkAction} onExport={handleExport} onComment={setSelectedEntry} theme={theme} />}
+        {activeTab === 'entries' && <EntriesTab entries={entries} searchQuery={searchQuery} setSearchQuery={setSearchQuery} filterType={filterType} setFilterType={setFilterType} filterStatus={filterStatus} setFilterStatus={setFilterStatus} onDelete={handleDeleteEntry} onToggle={handleToggleStatus} onFilter={fetchEntries} onBulk={handleBulkAction} onExport={handleExport} onComment={onSelectEntry} theme={theme} />}
         {activeTab === 'calendar' && <CalendarTab entries={calendarEntries} year={calendarYear} month={calendarMonth} onYearChange={setCalendarYear} onMonthChange={setCalendarMonth} theme={theme} />}
-        {activeTab === 'workspace' && <WorkspaceTab entries={entries} onStatusChange={(id, status) => { API(`/api/entries/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }).then(() => fetchEntries()); }} theme={theme} />}
+        {activeTab === 'workspace' && <WorkspaceTab entries={entries} selectedEntry={selectedEntry} onSelectEntry={onSelectEntry} onStatusChange={(id, status) => { API(`/api/entries/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }).then(() => fetchEntries()); }} theme={theme} />}
         {activeTab === 'pomodoro' && <PomodoroTab stats={pomodoroStats} timeLeft={pomodoroTimeLeft} setTimeLeft={setPomodoroTimeLeft} isRunning={pomodoroIsRunning} setIsRunning={setPomodoroIsRunning} duration={pomodoroDuration} setDuration={setPomodoroDuration} lang={lang} theme={theme} />}
         {activeTab === 'knowledge' && <KnowledgeTab lang={lang} theme={theme} aiUsage={aiUsage} />}
         {activeTab === 'about' && <AboutTab lang={lang} theme={theme} />}
@@ -692,10 +693,9 @@ function CalendarTab({ entries, year, month, onYearChange, onMonthChange, theme 
   );
 }
 
-function WorkspaceTab({ entries, onStatusChange, theme }: { entries: Entry[]; onStatusChange: (id: number, status: Entry['status']) => void; theme: string }) {
+function WorkspaceTab({ entries, selectedEntry, onSelectEntry, onStatusChange, theme }: { entries: Entry[]; selectedEntry: Entry | null; onSelectEntry: (e: Entry | null) => void; onStatusChange: (id: number, status: Entry['status']) => void; theme: string }) {
   const [view, setView] = useState<'outline' | 'kanban' | 'linked' | 'graph'>('outline');
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
-  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
 
   const cardBg = theme === 'dark' ? 'bg-zinc-900' : 'bg-white';
   const cardBorder = theme === 'dark' ? 'border-zinc-800' : 'border-gray-200';
@@ -743,7 +743,7 @@ function WorkspaceTab({ entries, onStatusChange, theme }: { entries: Entry[]; on
       <div className="flex items-center justify-between">
         <div className="flex gap-1">
           {views.map(v => (
-            <button key={v.id} onClick={() => { setView(v.id); setSelectedEntry(null); }}
+            <button key={v.id} onClick={() => { setView(v.id); onSelectEntry(null); }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition ${view === v.id ? 'bg-amber-500/20 text-amber-400' : `${subtleText} ${hoverBg}`}`}>
               <v.icon size={14} />{v.label}
             </button>
@@ -780,7 +780,7 @@ function WorkspaceTab({ entries, onStatusChange, theme }: { entries: Entry[]; on
                         </div>
                         {typeEntries.map(e => (
                           <div key={e.id} className={`px-8 py-2 border-t ${cardBorder} ${hoverBg} cursor-pointer flex items-center gap-2`}
-                            onClick={() => setSelectedEntry(selectedEntry?.id === e.id ? null : e)}>
+                            onClick={() => onSelectEntry(selectedEntry?.id === e.id ? null : e)}>
                             <span className={`text-xs ${e.status === 'completed' ? 'line-through text-zinc-500' : subtleText} flex-1 truncate`}>{e.title}</span>
                             {e.due_date && <span className="text-[10px] text-amber-500/70">{e.due_date}</span>}
                             {e.priority > 0 && <span className={`text-[10px] font-bold px-1 rounded ${e.priority >= 3 ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}>P{e.priority}</span>}
@@ -872,7 +872,7 @@ function WorkspaceTab({ entries, onStatusChange, theme }: { entries: Entry[]; on
                       <span className={`text-[10px] ${mutedText} font-medium`}>Conecta con:</span>
                       {outgoing.map(o => (
                         <div key={o.id} className={`flex items-center gap-1 ml-4 text-xs ${subtleText} ${hoverBg} rounded px-2 py-1 cursor-pointer`}
-                          onClick={() => setSelectedEntry(selectedEntry?.id === o.id ? null : o)}>
+                          onClick={() => onSelectEntry(selectedEntry?.id === o.id ? null : o)}>
                           <MoveRight size={12} className="text-amber-400" />
                           <span>{typeIcons[o.type]}</span>
                           <span className="truncate">{o.title}</span>
@@ -885,7 +885,7 @@ function WorkspaceTab({ entries, onStatusChange, theme }: { entries: Entry[]; on
                       <span className={`text-[10px] ${mutedText} font-medium`}>Enlazado por:</span>
                       {incoming.map(i => (
                         <div key={i.id} className={`flex items-center gap-1 ml-4 text-xs ${subtleText} ${hoverBg} rounded px-2 py-1 cursor-pointer`}
-                          onClick={() => setSelectedEntry(selectedEntry?.id === i.id ? null : i)}>
+                          onClick={() => onSelectEntry(selectedEntry?.id === i.id ? null : i)}>
                           <MoveRight size={12} className="text-blue-400 rotate-180" />
                           <span>{typeIcons[i.type]}</span>
                           <span className="truncate">{i.title}</span>
@@ -969,7 +969,7 @@ function WorkspaceTab({ entries, onStatusChange, theme }: { entries: Entry[]; on
                     const color = e.type === 'idea' ? '#f59e0b' : e.type === 'task' ? '#10b981' : e.type === 'note' ? '#3b82f6' : '#8b5cf6';
                     const r = 14 + (connCount.get(e.id) || 0) * 2;
                     return (
-                      <g key={e.id} className="cursor-pointer" onClick={() => setSelectedEntry(selectedEntry?.id === e.id ? null : e)}>
+                      <g key={e.id} className="cursor-pointer" onClick={() => onSelectEntry(selectedEntry?.id === e.id ? null : e)}>
                         <circle cx={pos.x} cy={pos.y} r={r} fill={color} opacity="0.15" />
                         <circle cx={pos.x} cy={pos.y} r={r - 2} fill="#18181b" stroke={color} strokeWidth="2" />
                         <text x={pos.x} y={pos.y + 4} textAnchor="middle" fill="#e4e4e7" fontSize="9">
@@ -985,7 +985,7 @@ function WorkspaceTab({ entries, onStatusChange, theme }: { entries: Entry[]; on
         </div>
       )}
 
-      {selectedEntry && <EntryCommentsPanel entry={selectedEntry} lang={lang} theme={theme} authEmail={user?.email || ''} onClose={() => setSelectedEntry(null)} />}
+      {selectedEntry && <EntryCommentsPanel entry={selectedEntry} lang={lang} theme={theme} authEmail={user?.email || ''} onClose={() => onSelectEntry(null)} />}
     </div>
   );
 }
