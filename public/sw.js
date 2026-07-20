@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todo-osint-v1';
+const CACHE_NAME = 'todo-osint-v2';
 const ASSETS = ['/', '/index.html'];
 
 self.addEventListener('install', (e) => {
