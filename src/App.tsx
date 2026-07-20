@@ -599,8 +599,9 @@ function EntriesTab({ entries, searchQuery, setSearchQuery, filterType, setFilte
               </div>
             ))}
           </>
-        )}
-      </div>
+      )}
+      {selectedEntry && <EntryCommentsPanel entry={selectedEntry} lang={lang} theme={theme} authEmail={user?.email || ''} onClose={() => onSelectEntry(null)} />}
+    </div>
     </div>
   );
 }
@@ -985,7 +986,6 @@ function WorkspaceTab({ entries, selectedEntry, onSelectEntry, onStatusChange, t
         </div>
       )}
 
-      {selectedEntry && <EntryCommentsPanel entry={selectedEntry} lang={lang} theme={theme} authEmail={user?.email || ''} onClose={() => onSelectEntry(null)} />}
     </div>
   );
 }
